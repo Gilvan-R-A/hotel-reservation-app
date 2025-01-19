@@ -15,11 +15,12 @@ class ReservationController {
 
        if ($reservation->checkConflict($data['start_time'], $data['end_time'], $data['room_number'] )){
             http_response_code(409);
-            echo json_encode(['error' => 'Conflito de horário detectado.']);
+            echo json_encode(['error' => 'Conflito de horario detectado.']);
             return;
        }
 
        if ($reservation->createReservation($data)){
+            http_response_code(201);
             echo json_encode(['message' => 'Reserva criada com sucesso.']);
        } else {
         http_response_code(500);

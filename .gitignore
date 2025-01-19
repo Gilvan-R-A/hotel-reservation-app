@@ -8,6 +8,7 @@
 *.swp
 /.env
 /.env.local
+.env
 
 /cache/
 /storage/framework/cache/
