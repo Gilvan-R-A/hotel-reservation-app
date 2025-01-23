@@ -1,54 +1,46 @@
 <?php
 
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
-class Reservation 
-{
-    private $pdo;
+class Reservation {
 
-    public function __construct()
-    {
+    public static function getAll() {
         global $pdo;
-        $this->pdo = $pdo;
-    }
-
-    public function getAllReservations()
-    {
-        $stmt = $this->pdo->query('SELECT * FROM reservations');
+        $stmt = $pdo->query('SELECT * FROM reservations');
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function createReservation($data)
-    {
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO reservations (room_Number, start_time, end_time, customer_name, customer_email)
-             VALUES (:room_number, :start_time, :end_time, :customer_name, :customer_email)'
-        );
-
-        $stmt->bindParam(':room_number', $data['room_number'], PDO::PARAM_INT);
-        $stmt->bindParam(':start_time', $data['start_time'], PDO::PARAM_STR);
-        $stmt->bindParam(':end_time', $data['end_time'], PDO::PARAM_STR);
-        $stmt->bindParam(':customer_name', $data['customer_name'], PDO::PARAM_STR);
-        $stmt->bindParam(':customer_email', $data['customer_email'], PDO::PARAM_STR);
-
-        return $stmt->execute();
+    public static function create($room_number, $start_time, $end_time, $customer_name, $customer_email) {
+        global $pdo;
+        $stmt = $pdo->prepare('INSERT INTO reservations (room_number, start_time, end_time, customer_name, customer_email) 
+        VALUES (:room_number, :start_time, :end_time, :customer_name, :customer_email)');
+        return $stmt->execute([
+            ':room_number' => $room_number,
+            ':start_time' => $start_time,
+            ':end_time' => $end_time,
+            ':customer_name' => $customer_name,
+            ':customer_email' => $customer_email
+        ]);
     }
 
-    public function checkConflict($startTime, $endTime, $roomNumber)
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT COUNT(*) FROM reservations 
-            WHERE room_number = :room_number 
-            AND ((start_time < :end_time AND end_time > :start_time))'
-        );
+    public static function update($id, $room_number, $start_time, $end_time, $customer_name, $customer_email) {
+        global $pdo;
+        $stmt = $pdo->prepare('UPDATE reservations SET room_number = :room_number, 
+        start_time = :start_time, end_time = :end_time, customer_name = :customer_name, customer_email = :customer_email WHERE id = :id');
+        return $stmt->execute([
+            'id' => $id,
+            ':room_number' => $room_number,
+            ':start_time' => $start_time,
+            ':end_time' => $end_time,
+            ':customer_name' => $customer_name,
+            ':customer_email' => $customer_email,
+        ]);
+    }
 
-        $stmt->bindParam(':room_number', $roomNumber, PDO::PARAM_INT);
-        $stmt->bindParam(':start_time', $startTime, PDO::PARAM_STR);
-        $stmt->bindParam(':end_time', $endTime, PDO::PARAM_STR);
-        $stmt->execute();
-
-        return $stmt->fetchColumn() > 0;
-
+    public static function delete($id) {
+        global $pdo;
+        $stmt = $pdo->prepare(('DELETE FROM reservations WHERE id = :id'));
+        return $stmt->execute([':id' => $id]);
     }
 
 }
