@@ -12,7 +12,35 @@
 
 <body>
 
+    <h1>Hotel Reservations</h1>
+
     <div id="calendar"></div>
+
+    <button id="create-reservation-btn">Nova Reserva</button>
+
+
+    <div id="reservation-form" style="display: none;">
+        <h2>Criar Reserva</h2>
+        <form>
+            <label for="room-number">Número do Quarto: </label>
+            <input type="number" id="room-number" name="room-number" required>
+
+            <label for="start-time">Data de Início: </label>
+            <input type="datetime-local" id="start-time" name="start-time" required>
+
+            <label for="end-time">Data de Término: </label>
+            <input type="datetime-local" id="end-time" name="end-time" required>
+
+            <label for="customer-name">Nome do Cliente: </label>
+            <input type="text" id="customer-name" name="customer-name" required>
+
+            <label for="customer-email">E-mail do Cliente: </label>
+            <input type="email" id="customer-email" name="customer-email" required>
+
+            <button type="button" id="submit-reservation-btn">Salvar</button>
+            <button type="button" id="cancel-reservation-btn">Cancelar</button>
+        </form>
+    </div>
 
     <script src="js/main.js"></script>
 </body>
