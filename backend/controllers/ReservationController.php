@@ -26,6 +26,28 @@ class ReservationController {
             return;
         }
 
+        $conflictingReservation = Reservation::checkConflict(
+            $data['room_number'],
+            $data['start_time'],
+            $data['end_time']
+        );
+
+        if ($conflictingReservation) {
+            http_response_code(409);
+            echo json_encode(['error' => 'Já existe uma reserva para este quarto no período selecionado'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+
+
+
+
+
+
+
+
+
+
         $result =Reservation::create($data['room_number'], $data['start_time'], $data['end_time'], $data['customer_name'], $data['customer_email']);
         if ($result){
             http_response_code(201);
@@ -51,6 +73,27 @@ class ReservationController {
             echo json_encode(['error' => 'A data de início deve ser anterior à data de término.'], JSON_UNESCAPED_UNICODE);
             return;
         }
+
+        $conflictingReservation = Reservation::checkConflict(
+            $data['room_number'],
+            $data['start_time'],
+            $data['end_time'],
+            $id
+        );
+
+        if ($conflictingReservation) {
+            http_response_code(409);
+            echo json_encode(['error' => 'Já existe uma reserva para este quarto no período selecionado', JSON_UNESCAPED_UNICODE]);
+            return;
+        }
+
+
+
+
+
+
+
+
 
         $result = Reservation::update($id, $data['room_number'], $data['start_time'], $data['end_time'], $data['customer_name'], $data['customer_email']);
         if ($result) {
