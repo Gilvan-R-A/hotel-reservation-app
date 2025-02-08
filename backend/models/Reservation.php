@@ -14,6 +14,11 @@ class Reservation
 
     public static function create($room_number, $start_time, $end_time, $customer_name, $customer_email)
     {
+
+        if (!self::isValidEmail($customer_email)) {
+            throw new Exception("O e-mail fornecido é inválido.");
+        }
+
         $db = Database::getConnection();
         $query = 'INSERT INTO reservations (room_number, start_time, end_time, customer_name, customer_email) 
                   VALUES (:room_number, :start_time, :end_time, :customer_name, :customer_email)';
@@ -82,4 +87,9 @@ class Reservation
 
         return $result ?: null;
     }
+
+    public static function isValidEmail($email) {
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
 }

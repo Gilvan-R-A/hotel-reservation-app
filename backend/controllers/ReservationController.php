@@ -38,16 +38,6 @@ class ReservationController {
             return;
         }
 
-
-
-
-
-
-
-
-
-
-
         $result =Reservation::create($data['room_number'], $data['start_time'], $data['end_time'], $data['customer_name'], $data['customer_email']);
         if ($result){
             http_response_code(201);
@@ -86,14 +76,6 @@ class ReservationController {
             echo json_encode(['error' => 'Já existe uma reserva para este quarto no período selecionado', JSON_UNESCAPED_UNICODE]);
             return;
         }
-
-
-
-
-
-
-
-
 
         $result = Reservation::update($id, $data['room_number'], $data['start_time'], $data['end_time'], $data['customer_name'], $data['customer_email']);
         if ($result) {
