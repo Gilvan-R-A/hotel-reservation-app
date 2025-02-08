@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: `Quarto: ${reservation.room_number}`,
                     start: reservation.start_time,
                     end: reservation.end_time,
+                    extendedProps: {
+                        customerName: reservation.customer_name,
+                        customerEmail: reservation.customer_email,
+                    }
                 }));
                 successCallback(events);
             } catch (error) {
@@ -22,29 +26,49 @@ document.addEventListener('DOMContentLoaded', function () {
         eventClick: async function (info) {
             const eventId = info.event.id;
 
-            const action = confirm('Clique OK para editar ou Cancelar para excluir.');
+            const result = await Swal.fire({
+                title: 'Gerenciar Reserva',
+                text: 'Deseja editar ou excluir a reserva?',
+                icon: 'question',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Editar',
+                denyButtonText: 'Excluir',
+                cancelButtonText: 'Cancelar',
+            });
 
-            if (action) {
-                const updateData = promptEditReservation(info.event);
+            if (result.isConfirmed) {
+                const updateData = await promptEditReservation(info.event);
 
-                if (updateData) {
+                if (updateData && isValidReservation(updateData)) {
 
-                    if (!isValidReservation(updateData)) {
-                        return;
-                    }
                     await updateReservation(eventId, updateData);
-                    alert('Reserva atualizada com sucesso!');
+                    Swal.fire('Sucesso!', 'Reserva atualizada com sucesso', 'success');
                     calendar.refetchEvents();
                 }
-            } else {
-                if (confirm('Deseja realmente excluir esta reserva?')) {
-                    await deleteReservation(eventId);
-                    alert('Reserva excluída com sucesso!');
-                    calendar.refetchEvents();
+            } else if (result.isDenied) {
+                const { isConfirmed } = await Swal.fire({
+                    title: 'Tem certeza?',
+                    text: 'Esta ação não pode ser desfeita!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sim, excluir!',
+                    cancelButtonText: 'Cancelar'
+                });
+
+                if (isConfirmed) {
+
+                    try {
+                        await deleteReservation(eventId);
+                        Swal.fire('Excluído!', 'Reserva removida com sucesso.', 'success');
+                        calendar.refetchEvents();
+                    } catch (error) {
+                        Swal.fire('Erro!', 'Não foi possível excluir a reserva.', 'error');
+                        console.error('Erro ao excluir a reserva: ', error);
+                    }
                 }
             }
-        },
-
+        }
     });
     calendar.render();
 
@@ -84,16 +108,90 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             await createReservation(data);
-            alert('Reserva criada com sucesso!');
+            Swal.fire('Sucesso!', 'Reserva criada com sucesso!', 'success');
             clearForm();
             formEl.style.display = 'none';
             calendar.refetchEvents();
         } catch (error) {
-            alert('Erro ao criar reserva: ' + error.message);
+            Swal.fire('Erro!', 'Erro ao criar reserva: ' + error.message, 'error');
         }
     });
 
 });
+
+
+async function promptEditReservation(event) {
+    const { value: formValues } = await Swal.fire({
+        title: 'Editar Reserva',
+        width: '40rem',
+        html:
+            `<style>
+            .swal2-form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                text-align: left;
+                width: 100%;
+            }
+            .swal2-form-group label {
+                font-weight: bold;
+            }
+            .swal2-form-group input {
+                width: 100%;
+                margin: 16px 0px 3px !important;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                font-size: 16px;
+            }   
+        </style>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+        <div class="swal2-form-group">
+            <label for="swal-room">Número do Quarto:</label>
+            <input id="swal-room" class="swal2-input" value="${event.title.split(' ')[1] || ''}" style="width: 95%;">
+        </div>
+
+        <div class="swal2-form-group">
+            <label for="swal-start">Data de Início:</label>
+            <input type="datetime-local" id="swal-start" class="swal2-input" value="${event.start ? event.start.toISOString().slice(0, 16) : ''}" style="width: 95%;">
+        </div>
+
+        <div class="swal2-form-group">
+            <label for="swal-end">Data de Término:</label>
+            <input type="datetime-local" id="swal-end" class="swal2-input" value="${event.end ? event.end.toISOString().slice(0, 16) : ''}" style="width: 95%;">
+        </div>
+
+        <div class="swal2-form-group">
+            <label for="swal-name">Nome do Cliente:</label>
+            <input id="swal-name" class="swal2-input" value="${event.extendedProps?.customerName || ''}" style="width: 95%;">
+        </div>
+
+        <div class="swal2-form-group">
+            <label for="swal-email">E-mail do Cliente:</label>
+            <input id="swal-email" class="swal2-input" value="${event.extendedProps?.customerEmail || ''}" style="width: 95%;">
+        </div>        
+        </div>`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Salvar',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            return {
+                room_number: document.getElementById('swal-room').value,
+                start_time: document.getElementById('swal-start').value,
+                end_time: document.getElementById('swal-end').value,
+                customer_name: document.getElementById('swal-name').value,
+                customer_email: document.getElementById('swal-email').value
+            };
+        }
+    });
+
+    if (!formValues) return null;
+
+    return formValues;
+}
+
 
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -103,104 +201,70 @@ function isValidEmail(email) {
 
 function isValidReservation(data) {
     if (!data.room_number || !data.start_time || !data.end_time || !data.customer_name || !data.customer_email) {
-        alert('Todos os campos são obrigatórios.');
+        Swal.fire('Erro!', 'Todos os campos são obrigatórios.', 'error');
         return false;
     }
 
     if (new Date(data.start_time) >= new Date(data.end_time)) {
-        alert('A data de início deve ser anterior à data de término,');
+        Swal.fire('Erro!', 'A data de início deve ser anterior à data de término,', 'error');
         return false;
     }
 
     if (!/^\d+$/.test(data.room_number)) {
-        alert('O número do quarto deve conter apenas dígitos.');
+        Swal.fire('Erro!', 'O número do quarto deve conter apenas dígitos.', 'error');
         return false;
     }
 
     if (data.customer_name.length < 3 || data.customer_name.length > 100) {
-        alert('O nome do cliente deve ter entre 3 e 100 caracteres.');
+        Swal.fire('Erro!', 'O nome do cliente deve ter entre 3 e 100 caracteres.', 'error');
         return false;
     }
 
     if (data.customer_email.length < 3 || data.customer_email.length > 100) {
-        alert('O e-mail do cliente deve ter entre 3 e 100 caracteres.');
+        Swal.fire('Erro!', 'O e-mail do cliente deve ter entre 3 e 100 caracteres.', 'error');
         return false;
     }
 
     if (!isValidEmail(data.customer_email)) {
-        alert('O e-mail fornecido é inválido.');
+        Swal.fire('Erro!', 'O e-mail fornecido é inválido.', 'error');
         return false;
     }
 
     return true;
-
 }
 
 async function createReservation(data) {
-
-    try {
-        const response = await fetch('http://localhost:8000/reservations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            if (response.status === 409) {
-                const error = await response.json();
-                alert(error.error);
-            } else {
-                throw new Error('Erro ao criar reserva. Tente novamente.');
-            }
-        }
-        return response.json();
-
-    } catch (error) {
-        console.error('Erro ao criar reserva: ', error);
-        throw error;
-    }
+    await fetch('http://localhost:8000/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
 }
 
-
 async function updateReservation(id, data) {
-    const response = await fetch(`http://localhost:8000/reservations/${id}`, {
+    await fetch(`http://localhost:8000/reservations/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     });
-    return response.json();
 }
 
 async function deleteReservation(id) {
-    const response = await fetch(`http://localhost:8000/reservations/${id}`, {
-        method: 'DELETE',
-    });
-    return response.json();
-}
 
+    try {
+        const response = await fetch(`http://localhost:8000/reservations/${id}`, {
+            method: 'DELETE',
+        });
 
-function promptEditReservation(event) {
-    const roomNumber = prompt('Número do quarto:', event.title.split(' ')[1] || '');
-    const startTime = prompt('Data de início (YYYY-MM-DDTHH:mm:ss):', event.start ? event.start.toISOString().slice(0, 16) : '');
-    const endTime = prompt('Data de término (YYYY-MM-DDTHH:mm:ss):', event.end ? event.end.toISOString().slice(0, 16) : '');
-    const customerName = prompt('Nome do cliente:', event.extendedProps?.customerName || '');
-    const customerEmail = prompt('E-mail do cliente:', event.extendedProps?.customerEmail || '');
+        if (!response.ok) {
+            throw new Error(`Erro ao excluir reserva: ${response.statusText}`);
+        }
 
-    const data = {
-        room_number: roomNumber,
-        start_time: startTime,
-        end_time: endTime,
-        customer_name: customerName,
-        customer_email: customerEmail,
-    };
-
-    if (!isValidReservation(data)) {
-        alert('Alguns dados são inválidos. A atualização foi cancelada.');
-        return null;
+        console.log('Reserva excluída com sucesso!');
+    } catch (error) {
+        console.error('Erro ao excluir reserva:', error);
+        throw error;
     }
-
-    return data;
-
 }
 
 function clearForm() {
