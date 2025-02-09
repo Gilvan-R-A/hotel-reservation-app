@@ -1,48 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/styles.css">
+
     <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js'></script>
     <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/index.global.min.js'></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <title>Hotel Reservations</title>
 </head>
 
 <body>
 
-    <h1>Hotel Reservations</h1>
+    <header>
+        <h1>Hotel Reservations</h1>
+    </header>
+  
+    <main>
+        <button id="create-reservation-btn" class="btn-primary">
+            <i class="fas fa-plus"></i>Nova Reserva
+        </button>
 
-    <div id="calendar"></div>
+        <div id="calendar"></div>
+    </main>
 
-    <button id="create-reservation-btn">Nova Reserva</button>
-
-
-    <div id="reservation-form" style="display: none;">
-        <h2>Criar Reserva</h2>
-        <form>
-            <label for="room-number">Número do Quarto: </label>
-            <input type="number" id="room-number" name="room-number" required>
-
-            <label for="start-time">Data de Início: </label>
-            <input type="datetime-local" id="start-time" name="start-time" required>
-
-            <label for="end-time">Data de Término: </label>
-            <input type="datetime-local" id="end-time" name="end-time" required>
-
-            <label for="customer-name">Nome do Cliente: </label>
-            <input type="text" id="customer-name" name="customer-name" required>
-
-            <label for="customer-email">E-mail do Cliente: </label>
-            <input type="email" id="customer-email" name="customer-email" required>
-
-            <button type="button" id="submit-reservation-btn">Salvar</button>
-            <button type="button" id="cancel-reservation-btn">Cancelar</button>
-        </form>
-    </div>
+    <footer>
+        <p>&copy; 2025 Hotel Reservations. Todos os direitos reservados.</p>
+    </footer>
 
     <script src="js/main.js"></script>
 </body>

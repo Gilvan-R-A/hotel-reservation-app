@@ -80,6 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
       title: "Nova Reserva",
       width: "40rem",
       html: `
+            <div class="container">
                 <div class="swal2-form-group">
                     <label for="swal-room">Número do Quarto:</label>
                     <input id="swal-room" class="swal2-input" type="number">
@@ -104,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <label for="swal-email">E-mail do Cliente:</label>
                     <input id="swal-email" class="swal2-input" type="email">
                 </div>
+            </div>
             `,
       showCancelButton: true,
       confirmButtonText: "Salvar",
@@ -178,61 +180,41 @@ async function promptEditReservation(event) {
   const { value: formValues } = await Swal.fire({
     title: "Editar Reserva",
     width: "40rem",
-    html: `<style>
-            .swal2-form-group {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                text-align: left;
-                width: 100%;
-            }
-            .swal2-form-group label {
-                font-weight: bold;
-            }
-            .swal2-form-group input {
-                width: 100%;
-                margin: 16px 0px 3px !important;
-                padding: 8px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                font-size: 16px;
-            }   
-        </style>
-
-        <div style="display: flex; flex-direction: column; gap: 15px;">
+    html: `
+        <div  class="container">
         <div class="swal2-form-group">
             <label for="swal-room">Número do Quarto:</label>
             <input id="swal-room" class="swal2-input" value="${
               event.title.split(" ")[1] || ""
-            }" style="width: 95%;">
+            }">
         </div>
 
         <div class="swal2-form-group">
             <label for="swal-start">Data de Início:</label>
             <input type="datetime-local" id="swal-start" class="swal2-input" value="${
               event.start ? event.start.toISOString().slice(0, 16) : ""
-            }" style="width: 95%;">
+            }">
         </div>
 
         <div class="swal2-form-group">
             <label for="swal-end">Data de Término:</label>
             <input type="datetime-local" id="swal-end" class="swal2-input" value="${
               event.end ? event.end.toISOString().slice(0, 16) : ""
-            }" style="width: 95%;">
+            }">
         </div>
 
         <div class="swal2-form-group">
             <label for="swal-name">Nome do Cliente:</label>
             <input id="swal-name" class="swal2-input" value="${
               event.extendedProps?.customerName || ""
-            }" style="width: 95%;">
+            }">
         </div>
 
         <div class="swal2-form-group">
             <label for="swal-email">E-mail do Cliente:</label>
             <input id="swal-email" class="swal2-input" value="${
               event.extendedProps?.customerEmail || ""
-            }" style="width: 95%;">
+            }">
         </div>        
         </div>`,
     focusConfirm: false,
