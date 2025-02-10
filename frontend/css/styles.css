@@ -116,6 +116,19 @@ button, input {
     gap: 15px;
 }
 
+.error-message {
+    color: red;;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-top: 4px;
+    display: block;
+}
+
+.swal2-input.error {
+    border: 2px solid red !important;
+    background-color: #ffe6e6;
+}
+
 footer {
     background-color: #333;
     color: white;

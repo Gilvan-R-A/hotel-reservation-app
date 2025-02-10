@@ -84,26 +84,31 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="swal2-form-group">
                     <label for="swal-room">Número do Quarto:</label>
                     <input id="swal-room" class="swal2-input" type="number">
+                    <div class="error-message" id="error-room"></div>
                 </div>
 
                 <div class="swal2-form-group">
                     <label for="swal-start">Data de Início:</label>
                     <input id="swal-start" class="swal2-input" type="datetime-local">
+                    <div class="error-message" id="error-start"></div>
                 </div>
 
                 <div class="swal2-form-group">
                     <label for="swal-end">Data de Término:</label>
                     <input id="swal-end" class="swal2-input" type="datetime-local">
+                    <div class="error-message" id="error-end"></div>
                 </div>
 
                 <div class="swal2-form-group">
                     <label for="swal-name">Nome do Cliente:</label>
                     <input id="swal-name" class="swal2-input">
+                    <div class="error-message" id="error-name"></div>
                 </div>
 
                 <div class="swal2-form-group">
                     <label for="swal-email">E-mail do Cliente:</label>
                     <input id="swal-email" class="swal2-input" type="email">
+                    <div class="error-message" id="error-email"></div>
                 </div>
             </div>
             `,
@@ -120,11 +125,9 @@ document.addEventListener("DOMContentLoaded", function () {
           customer_email: document.getElementById("swal-email").value,
         };
 
-        const validationMessage = isValidReservation(data);
-        if (validationMessage !== true) {
-          Swal.showValidationMessage(validationMessage);
-          return Promise.reject();
-        }
+      if (!isValidReservation(data)) {
+        return false;
+      }
 
         return data;
       },
@@ -176,6 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+
 async function promptEditReservation(event) {
   const { value: formValues } = await Swal.fire({
     title: "Editar Reserva",
@@ -187,6 +191,7 @@ async function promptEditReservation(event) {
             <input id="swal-room" class="swal2-input" value="${
               event.title.split(" ")[1] || ""
             }">
+            <div class="error-message" id="error-room"></div>
         </div>
 
         <div class="swal2-form-group">
@@ -194,6 +199,7 @@ async function promptEditReservation(event) {
             <input type="datetime-local" id="swal-start" class="swal2-input" value="${
               event.start ? event.start.toISOString().slice(0, 16) : ""
             }">
+            <div class="error-message" id="error-start"></div>
         </div>
 
         <div class="swal2-form-group">
@@ -201,6 +207,7 @@ async function promptEditReservation(event) {
             <input type="datetime-local" id="swal-end" class="swal2-input" value="${
               event.end ? event.end.toISOString().slice(0, 16) : ""
             }">
+            <div class="error-message" id="error-end"></div>
         </div>
 
         <div class="swal2-form-group">
@@ -208,6 +215,7 @@ async function promptEditReservation(event) {
             <input id="swal-name" class="swal2-input" value="${
               event.extendedProps?.customerName || ""
             }">
+            <div class="error-message" id="error-name"></div>
         </div>
 
         <div class="swal2-form-group">
@@ -215,6 +223,7 @@ async function promptEditReservation(event) {
             <input id="swal-email" class="swal2-input" value="${
               event.extendedProps?.customerEmail || ""
             }">
+            <div class="error-message" id="error-email"></div>
         </div>        
         </div>`,
     focusConfirm: false,
@@ -222,13 +231,19 @@ async function promptEditReservation(event) {
     confirmButtonText: "Salvar",
     cancelButtonText: "Cancelar",
     preConfirm: () => {
-      return {
+      const data = {
         room_number: document.getElementById("swal-room").value,
         start_time: document.getElementById("swal-start").value,
         end_time: document.getElementById("swal-end").value,
         customer_name: document.getElementById("swal-name").value,
         customer_email: document.getElementById("swal-email").value,
       };
+
+      if (!isValidReservation(data)) {
+        return false;
+      }
+
+      return data;
     },
   });
 
@@ -243,59 +258,84 @@ function isValidEmail(email) {
 }
 
 function isValidReservation(data) {
-  if (
-    !data.room_number ||
-    !data.start_time ||
-    !data.end_time ||
-    !data.customer_name ||
-    !data.customer_email
-  ) {
-    Swal.fire("Erro!", "Todos os campos são obrigatórios.", "error");
-    return false;
-  }
+  let isValid = true;
 
-  if (new Date(data.start_time) >= new Date(data.end_time)) {
-    Swal.fire(
-      "Erro!",
-      "A data de início deve ser anterior à data de término,",
-      "error"
-    );
-    return false;
-  }
+  document.getElementById('error-room').textContent = "";
+  document.getElementById('error-start').textContent = "";
+  document.getElementById('error-end').textContent = "";
+  document.getElementById('error-name').textContent = "";
+  document.getElementById('error-email').textContent = "";
 
-  if (!/^\d+$/.test(data.room_number)) {
-    Swal.fire(
-      "Erro!",
-      "O número do quarto deve conter apenas dígitos.",
-      "error"
-    );
-    return false;
-  }
+  document.getElementById('swal-room').classList.remove("error");
+  document.getElementById('swal-start').classList.remove("error");
+  document.getElementById('swal-end').classList.remove("error");
+  document.getElementById('swal-name').classList.remove("error");
+  document.getElementById('swal-email').classList.remove("error");
 
-  if (data.customer_name.length < 3 || data.customer_name.length > 100) {
-    Swal.fire(
-      "Erro!",
-      "O nome do cliente deve ter entre 3 e 100 caracteres.",
-      "error"
-    );
-    return false;
-  }
+if (!data.room_number) {
+  document.getElementById("error-room").textContent = "Número do quarto é obrigatório.";
+  document.getElementById("swal-room").classList.add("error");
+  isValid = false;
+}
 
-  if (data.customer_email.length < 3 || data.customer_email.length > 100) {
-    Swal.fire(
-      "Erro!",
-      "O e-mail do cliente deve ter entre 3 e 100 caracteres.",
-      "error"
-    );
-    return false;
-  }
+if (!data.start_time) {
+  document.getElementById("error-start").textContent = "Data de início é obrigatória.";
+  document.getElementById("swal-start").classList.add("error");
+  isValid = false;
+}
 
-  if (!isValidEmail(data.customer_email)) {
-    Swal.fire("Erro!", "O e-mail fornecido é inválido.", "error");
-    return false;
-  }
+if (!data.end_time) {
+  document.getElementById("error-end").textContent = "Data de término é obrigatória.";
+  document.getElementById("swal-end").classList.add("error");
+  isValid = false;
+}
 
-  return true;
+if (!data.customer_name) {
+  document.getElementById("error-name").textContent = "Nome do cliente é obrigatório.";
+  document.getElementById("swal-name").classList.add("error");
+  isValid = false;
+}
+
+if (!data.customer_email) {
+  document.getElementById("error-email").textContent = "E-mail do cliente é obrigatório.";
+  document.getElementById("swal-email").classList.add("error");
+  isValid = false;
+}
+
+if (data.start_time && data.end_time && new Date(data.start_time) >= new Date(data.end_time)) {
+  document.getElementById("error-start").textContent = "A data de início deve ser anterior à data de término.";
+  document.getElementById("swal-start").classList.add("error");
+  document.getElementById("error-end").textContent = "A data de término deve ser posterior à data de início.";
+  document.getElementById("swal-end").classList.add("error");
+  isValid = false; 
+}
+
+if (data.room_number && !/^\d+$/.test(data.room_number)) {
+  document.getElementById("error-room").textContent = "O número do quarto deve conter apenas dígitos.";
+  document.getElementById("swal-room").classList.add("error");
+  isValid = false;
+}
+
+if (data.customer_name && (data.customer_name.length < 3 || data.customer_name.length > 100)) {
+  document.getElementById("error-name").textContent = "O nome deve ter entre 3 e 100 caracteres.";
+  document.getElementById("swal-name").classList.add("error");
+  isValid = false;
+}
+
+if (data.customer_email && (data.customer_email.length < 3 || data.customer_email.length > 100)) {
+  document.getElementById("error-email").textContent = "O e-mail deve ter entre 3 e 100 caracteres.";
+  document.getElementById("swal-email").classList.add("error");
+  isValid = false;
+}
+
+if (data.customer_email && !isValidEmail(data.customer_email)) {
+  document.getElementById("error-email").textContent = "O e-mail fornecido é inválido.";
+  document.getElementById("swal-email").classList.add("error");
+  isValid = false;
+}
+
+return isValid;
+
 }
 
 async function createReservation(data) {
