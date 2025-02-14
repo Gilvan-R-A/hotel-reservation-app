@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
   const calendarEl = document.getElementById("calendar");
+
+  if (!calendarEl) return;
+
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "dayGridMonth",
     events: async function (fetchInfo, successCallback, failureCallback) {
@@ -70,111 +73,114 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   calendar.render();
 
-  const createBtn = document.getElementById("create-reservation-btn");
-  const formEl = document.getElementById("reservation-form");
-  const submitBtn = document.getElementById("submit-reservation-btn");
-  const cancelBtn = document.getElementById("cancel-reservation-btn");
+  document.addEventListener("click", async function (event) {
+    if (event.target.id === "create-reservation-btn") {
+      const { value: formValues } = await Swal.fire({
+        title: "Nova Reserva",
+        width: "40rem",
+        html: `
+              <div class="container">
+                  <div class="swal2-form-group">
+                      <label for="swal-room">Número do Quarto:</label>
+                      <input id="swal-room" class="swal2-input" type="number">
+                      <div class="error-message" id="error-room"></div>
+                  </div>
+  
+                  <div class="swal2-form-group">
+                      <label for="swal-start">Data de Início:</label>
+                      <input id="swal-start" class="swal2-input" type="datetime-local">
+                      <div class="error-message" id="error-start"></div>
+                  </div>
+  
+                  <div class="swal2-form-group">
+                      <label for="swal-end">Data de Término:</label>
+                      <input id="swal-end" class="swal2-input" type="datetime-local">
+                      <div class="error-message" id="error-end"></div>
+                  </div>
+  
+                  <div class="swal2-form-group">
+                      <label for="swal-name">Nome do Cliente:</label>
+                      <input id="swal-name" class="swal2-input">
+                      <div class="error-message" id="error-name"></div>
+                  </div>
+  
+                  <div class="swal2-form-group">
+                      <label for="swal-email">E-mail do Cliente:</label>
+                      <input id="swal-email" class="swal2-input" type="email">
+                      <div class="error-message" id="error-email"></div>
+                  </div>
+              </div>
+              `,
+        showCancelButton: true,
+        confirmButtonText: "Salvar",
+        cancelButtonText: "Cancelar",
+        focusConfirm: false,
+        preConfirm: () => {
+          const data = {
+            room_number: document.getElementById("swal-room").value,
+            start_time: document.getElementById("swal-start").value,
+            end_time: document.getElementById("swal-end").value,
+            customer_name: document.getElementById("swal-name").value,
+            customer_email: document.getElementById("swal-email").value,
+          };
+  
+        if (!isValidReservation(data)) {
+          return false;
+        }
+  
+          return data;
+        },
+      });
 
-  createBtn.addEventListener("click", async () => {
-    const { value: formValues } = await Swal.fire({
-      title: "Nova Reserva",
-      width: "40rem",
-      html: `
-            <div class="container">
-                <div class="swal2-form-group">
-                    <label for="swal-room">Número do Quarto:</label>
-                    <input id="swal-room" class="swal2-input" type="number">
-                    <div class="error-message" id="error-room"></div>
-                </div>
-
-                <div class="swal2-form-group">
-                    <label for="swal-start">Data de Início:</label>
-                    <input id="swal-start" class="swal2-input" type="datetime-local">
-                    <div class="error-message" id="error-start"></div>
-                </div>
-
-                <div class="swal2-form-group">
-                    <label for="swal-end">Data de Término:</label>
-                    <input id="swal-end" class="swal2-input" type="datetime-local">
-                    <div class="error-message" id="error-end"></div>
-                </div>
-
-                <div class="swal2-form-group">
-                    <label for="swal-name">Nome do Cliente:</label>
-                    <input id="swal-name" class="swal2-input">
-                    <div class="error-message" id="error-name"></div>
-                </div>
-
-                <div class="swal2-form-group">
-                    <label for="swal-email">E-mail do Cliente:</label>
-                    <input id="swal-email" class="swal2-input" type="email">
-                    <div class="error-message" id="error-email"></div>
-                </div>
-            </div>
-            `,
-      showCancelButton: true,
-      confirmButtonText: "Salvar",
-      cancelButtonText: "Cancelar",
-      focusConfirm: false,
-      preConfirm: () => {
-        const data = {
-          room_number: document.getElementById("swal-room").value,
-          start_time: document.getElementById("swal-start").value,
-          end_time: document.getElementById("swal-end").value,
-          customer_name: document.getElementById("swal-name").value,
-          customer_email: document.getElementById("swal-email").value,
-        };
-
-      if (!isValidReservation(data)) {
-        return false;
+      if (formValues) {
+        try {
+          await createReservation(formValues);
+          Swal.fire("Sucesso!", "Reserva criada com sucesso!", "success");
+          calendar.refetchEvents();
+        } catch (error) {
+          Swal.fire("Erro!", "Erro ao criar reserva: " + error.message, "error");
+        }
       }
+    }
 
-        return data;
-      },
-    });
+    if (event.target.id === "cancel-reservation-btn") {
+      const formEl = document.getElementById("reservation-form");
+      if (formEl) formEl.style.display = "none";
+    }
 
-    if (formValues) {
+
+    if (event.target.id === "submit-reservation-btn") {
+      const formEl = document.getElementById("reservation-form");
+
+      if (!formEl) return;
+
+      const roomNumber = document.getElementById("room-number").value;
+      const startTime = document.getElementById("start-time").value;
+      const endTime = document.getElementById("end-time").value;
+      const customerName = document.getElementById("customer-name").value;
+      const customerEmail = document.getElementById("customer-email").value;
+  
+      const data = {
+        room_number: roomNumber,
+        start_time: startTime,
+        end_time: endTime,
+        customer_name: customerName,
+        customer_email: customerEmail,
+      };
+  
+      if (!isValidReservation(data)) {
+        return;
+      }
+  
       try {
-        await createReservation(formValues);
+        await createReservation(data);
         Swal.fire("Sucesso!", "Reserva criada com sucesso!", "success");
+        clearForm();
+        formEl.style.display = "none";
         calendar.refetchEvents();
       } catch (error) {
         Swal.fire("Erro!", "Erro ao criar reserva: " + error.message, "error");
       }
-    }
-  });
-
-  cancelBtn.addEventListener("click", () => {
-    formEl.style.display = "none";
-  });
-
-  submitBtn.addEventListener("click", async () => {
-    const roomNumber = document.getElementById("room-number").value;
-    const startTime = document.getElementById("start-time").value;
-    const endTime = document.getElementById("end-time").value;
-    const customerName = document.getElementById("customer-name").value;
-    const customerEmail = document.getElementById("customer-email").value;
-
-    const data = {
-      room_number: roomNumber,
-      start_time: startTime,
-      end_time: endTime,
-      customer_name: customerName,
-      customer_email: customerEmail,
-    };
-
-    if (!isValidReservation(data)) {
-      return;
-    }
-
-    try {
-      await createReservation(data);
-      Swal.fire("Sucesso!", "Reserva criada com sucesso!", "success");
-      clearForm();
-      formEl.style.display = "none";
-      calendar.refetchEvents();
-    } catch (error) {
-      Swal.fire("Erro!", "Erro ao criar reserva: " + error.message, "error");
     }
   });
 });
