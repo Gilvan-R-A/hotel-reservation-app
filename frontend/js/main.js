@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
   const calendarEl = document.getElementById("calendar");
-  const viewSelector = document.getElementById("view-selector");
 
   if (!calendarEl) return;
 
@@ -94,24 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-
-  let initialView = window.innerWidth < 768 ? "timeGridWeek" : "dayGridMonth";
+  let initialView = "dayGridMonth";
   let calendar = new FullCalendar.Calendar(calendarEl, getCalendarOptions(initialView));
   calendar.render();
-
-  viewSelector.addEventListener("change", function () {
-    const newView = this.value;
-    calendar.changeView(newView);
-  })
-
-
-  window.addEventListener("resize", function () {
-    const newView = window.innerWidth < 768 ? "timeGridWeek" : "dayGridMonth";
- 
-    if (calendar.view.type !== newView) {
-      calendar.changeView(newView);
-    }
-  });
 
   document.addEventListener("click", async function (event) {
     if (event.target.id === "create-reservation-btn") {
