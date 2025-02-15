@@ -5,12 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/styles.css">
-
-    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/index.global.min.js'></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <title>Hotel Reservations</title>
@@ -21,11 +15,18 @@
     <header>
         <h1>Hotel Reservations</h1>
     </header>
-  
+
     <main>
         <button id="create-reservation-btn" class="btn-primary">
             <i class="fas fa-plus"></i>Nova Reserva
         </button>
+
+        <label for="view-selector">Escolha a Visualização:</label>
+        <select id="view-selector">
+            <option value="dayGridMonth">Mensal</option>
+            <option value="timeGridWeek">Semanal</option>
+            <option value="timeGridDay">Diária</option>
+        </select>
 
         <div id="calendar"></div>
     </main>
@@ -33,6 +34,16 @@
     <footer>
         <p>&copy; 2025 Hotel Reservations. Todos os direitos reservados.</p>
     </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core/locales/pt-br.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/list@6.1.15/index.global.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="js/main.js"></script>
 </body>

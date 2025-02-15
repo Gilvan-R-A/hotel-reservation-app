@@ -1,77 +1,117 @@
 document.addEventListener("DOMContentLoaded", function () {
   const calendarEl = document.getElementById("calendar");
+  const viewSelector = document.getElementById("view-selector");
 
   if (!calendarEl) return;
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    events: async function (fetchInfo, successCallback, failureCallback) {
-      try {
-        const response = await fetch("http://localhost:8000/reservations");
-        const reservations = await response.json();
-        const events = reservations.map((reservation) => ({
-          id: reservation.id,
-          title: `Quarto: ${reservation.room_number}`,
-          start: reservation.start_time,
-          end: reservation.end_time,
-          extendedProps: {
-            customerName: reservation.customer_name,
-            customerEmail: reservation.customer_email,
-          },
-        }));
-        successCallback(events);
-      } catch (error) {
-        failureCallback(error);
-      }
-    },
-
-    editable: true,
-    eventClick: async function (info) {
-      const eventId = info.event.id;
-
-      const result = await Swal.fire({
-        title: "Gerenciar Reserva",
-        text: "Deseja editar ou excluir a reserva?",
-        icon: "question",
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: "Editar",
-        denyButtonText: "Excluir",
-        cancelButtonText: "Cancelar",
-      });
-
-      if (result.isConfirmed) {
-        const updateData = await promptEditReservation(info.event);
-
-        if (updateData && isValidReservation(updateData)) {
-          await updateReservation(eventId, updateData);
-          Swal.fire("Sucesso!", "Reserva atualizada com sucesso", "success");
-          calendar.refetchEvents();
+  function getCalendarOptions(view = "dayGridMonth") {
+    return {
+      locale: "pt-br",
+      aspectRatio: 1.35,
+      initialView: view,
+      headerToolbar: {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay",
+      },
+      slotLabelFormat: {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      },
+      buttonText: {
+        today: "Hoje",
+        month: "Mês",
+        week: "Semana",
+        day: "Dia",
+        list: "Lista",
+      },
+      events: async function (fetchInfo, successCallback, failureCallback) {
+        try {
+          const response = await fetch("http://localhost:8000/reservations");
+          const reservations = await response.json();
+          const events = reservations.map((reservation) => ({
+            id: reservation.id,
+            title: `Quarto: ${reservation.room_number}`,
+            start: reservation.start_time,
+            end: reservation.end_time,
+            extendedProps: {
+              customerName: reservation.customer_name,
+              customerEmail: reservation.customer_email,
+            },
+          }));
+          successCallback(events);
+        } catch (error) {
+          failureCallback(error);
         }
-      } else if (result.isDenied) {
-        const { isConfirmed } = await Swal.fire({
-          title: "Tem certeza?",
-          text: "Esta ação não pode ser desfeita!",
-          icon: "warning",
+      },
+
+      editable: true,
+      eventClick: async function (info) {
+        const eventId = info.event.id;
+  
+        const result = await Swal.fire({
+          title: "Gerenciar Reserva",
+          text: "Deseja editar ou excluir a reserva?",
+          icon: "question",
+          showDenyButton: true,
           showCancelButton: true,
-          confirmButtonText: "Sim, excluir!",
+          confirmButtonText: "Editar",
+          denyButtonText: "Excluir",
           cancelButtonText: "Cancelar",
         });
-
-        if (isConfirmed) {
-          try {
-            await deleteReservation(eventId);
-            Swal.fire("Excluído!", "Reserva removida com sucesso.", "success");
+  
+        if (result.isConfirmed) {
+          const updateData = await promptEditReservation(info.event);
+  
+          if (updateData && isValidReservation(updateData)) {
+            await updateReservation(eventId, updateData);
+            Swal.fire("Sucesso!", "Reserva atualizada com sucesso", "success");
             calendar.refetchEvents();
-          } catch (error) {
-            Swal.fire("Erro!", "Não foi possível excluir a reserva.", "error");
-            console.error("Erro ao excluir a reserva: ", error);
+          }
+        } else if (result.isDenied) {
+          const { isConfirmed } = await Swal.fire({
+            title: "Tem certeza?",
+            text: "Esta ação não pode ser desfeita!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sim, excluir!",
+            cancelButtonText: "Cancelar",
+          });
+  
+          if (isConfirmed) {
+            try {
+              await deleteReservation(eventId);
+              Swal.fire("Excluído!", "Reserva removida com sucesso.", "success");
+              calendar.refetchEvents();
+            } catch (error) {
+              Swal.fire("Erro!", "Não foi possível excluir a reserva.", "error");
+              console.error("Erro ao excluir a reserva: ", error);
+            }
           }
         }
-      }
-    },
-  });
+      },
+    };
+  }
+
+
+  let initialView = window.innerWidth < 768 ? "timeGridWeek" : "dayGridMonth";
+  let calendar = new FullCalendar.Calendar(calendarEl, getCalendarOptions(initialView));
   calendar.render();
+
+  viewSelector.addEventListener("change", function () {
+    const newView = this.value;
+    calendar.changeView(newView);
+  })
+
+
+  window.addEventListener("resize", function () {
+    const newView = window.innerWidth < 768 ? "timeGridWeek" : "dayGridMonth";
+ 
+    if (calendar.view.type !== newView) {
+      calendar.changeView(newView);
+    }
+  });
 
   document.addEventListener("click", async function (event) {
     if (event.target.id === "create-reservation-btn") {
@@ -184,7 +224,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
-
 
 async function promptEditReservation(event) {
   const { value: formValues } = await Swal.fire({
