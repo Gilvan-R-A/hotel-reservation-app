@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!calendarEl) return;
 
-  function getCalendarOptions(view = "dayGridMonth") {
+  function getCalendarOptions(view = "dayGridMonth") { 
     return {
       locale: "pt-br",
       aspectRatio: 1.35,
@@ -286,7 +286,7 @@ function isValidEmail(email) {
   return emailRegex.test(email);
 }
 
-function isValidReservation(data) {
+async function isValidReservation(data) {
   let isValid = true;
 
   document.getElementById('error-room').textContent = "";
@@ -363,16 +363,56 @@ if (data.customer_email && !isValidEmail(data.customer_email)) {
   isValid = false;
 }
 
+if (isValid) {
+  try {
+    const response = await fetch("http://localhost:8000/reservations");
+    const reservations = await response.json();
+    const startTime = new Date(data.start_time);
+    const endTime = new Date(data.end_time);
+
+    const sameRoomReservations = reservations.filter((reservation) => {
+      return Number(reservation.room_number) === Number(data.room_number);
+    });
+
+    const hasConflict = sameRoomReservations.some((reservation) => {
+      const resStart = new Date(reservation.start_time);
+      const resEnd = new Date(reservation.end_time);
+
+      return (
+        startTime < resEnd && endTime > resStart
+      );
+    });
+
+    if (hasConflict) {
+      document.getElementById("error-start").textContent = "Já existe uma reserva nesse horário para este quarto.";
+      document.getElementById("swal-start").classList.add("error");
+      document.getElementById("error-end").textContent = "Escolha outro horário ou quarto.";
+      document.getElementById("swal-end").classList.add("error");
+      isValid = false;
+    }
+  } catch (error) {
+    console.error("Erro ao verificar conflitos de reserva:", error);
+    isValid = false;
+  }
+}
+
 return isValid;
 
 }
 
 async function createReservation(data) {
-  await fetch("http://localhost:8000/reservations", {
+  const response = await fetch("http://localhost:8000/reservations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(errorMessage || "Erro desconhecido ao criar reserva");
+  }
+
+  return response.json();
 }
 
 async function updateReservation(id, data) {
@@ -392,8 +432,6 @@ async function deleteReservation(id) {
     if (!response.ok) {
       throw new Error(`Erro ao excluir reserva: ${response.statusText}`);
     }
-
-    console.log("Reserva excluída com sucesso!");
   } catch (error) {
     console.error("Erro ao excluir reserva:", error);
     throw error;
