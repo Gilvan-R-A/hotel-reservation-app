@@ -6,10 +6,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 WORKDIR /app
 
-COPY backend /app/
+COPY . /app/
 
 RUN composer install
 
 EXPOSE 10000
 
-CMD [ "php", "-S", "0.0.0.0:10000", "-t", "public" ]
+CMD [ "php", "-S", "0.0.0.0:10000", "-t", "backend/public" ]
