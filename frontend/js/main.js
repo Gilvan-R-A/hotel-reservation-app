@@ -1,3 +1,5 @@
+const API_BASE = 'https://hotel-reservation-app-9jui.onrender.com';
+
 document.addEventListener("DOMContentLoaded", function () {
   const calendarEl = document.getElementById("calendar");
 
@@ -27,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       events: async function (fetchInfo, successCallback, failureCallback) {
         try {
-          const response = await fetch("http://localhost:8000/reservations");
+          const response = await fetch(`${API_BASE}/reservations`);
           const reservations = await response.json();
           const events = reservations.map((reservation) => ({
             id: reservation.id,
@@ -365,7 +367,7 @@ if (data.customer_email && !isValidEmail(data.customer_email)) {
 
 if (isValid) {
   try {
-    const response = await fetch("http://localhost:8000/reservations");
+    const response = await fetch(`${API_BASE}/reservations`);
     const reservations = await response.json();
     const startTime = new Date(data.start_time);
     const endTime = new Date(data.end_time);
@@ -401,7 +403,7 @@ return isValid;
 }
 
 async function createReservation(data) {
-  const response = await fetch("http://localhost:8000/reservations", {
+  const response = await fetch(`${API_BASE}/reservations`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -416,7 +418,7 @@ async function createReservation(data) {
 }
 
 async function updateReservation(id, data) {
-  await fetch(`http://localhost:8000/reservations/${id}`, {
+  await fetch(`${API_BASE}/reservations/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -425,7 +427,7 @@ async function updateReservation(id, data) {
 
 async function deleteReservation(id) {
   try {
-    const response = await fetch(`http://localhost:8000/reservations/${id}`, {
+    const response = await fetch(`${API_BASE}/reservations/${id}`, {
       method: "DELETE",
     });
 
