@@ -52,13 +52,9 @@ sistema-reservas/
 │   │   │   ├── api.js  # Funções de requisição AJAX
 │   │   ├── img/        # Imagens e ícones
 │   ├── index.html      # Página principal
-│── database/           # Arquivos do banco de dados
-│   ├── database.sql    # Script para criar as tabelas
-│── docs/               # Documentação e diagramas
-│   ├── README.md
-│   ├── DOCUMENTACAO.pdf
+│── Dockerfile          # Configuração Docker
+├── README.md
 │── .gitignore          # Arquivos ignorados pelo Git
-│── LICENSE             # Licença do projeto
 ```   
 
 ## Como Executar o Projeto   
@@ -104,13 +100,43 @@ CREATE TABLE reservations (
 
 ```   
 php -S localhost:8000 -t public
-```
+```   
+Acesse http://localhost:8000/reservations para testar o backend. 
 
-**4. Configure e Execute o Frontend**   
+**4. Execute o Frontend**  
 
-1. Abra **index.html** no navegador.   
-2. Verifique se o **main.js** aponta para o backend correto.   
-3. Acesse **http://localhost:8000** para testar.   
+**Opções para executar o frontend**:   
+
+- **PHP**:   
+
+```   
+cd frontend
+php -S localhost:3000
+```   
+Acesse: http://localhost:3000
+
+- **Python 3**:   
+
+```   
+cd frontend
+python3 -m http.server 3000
+```   
+Acesse: http://localhost:3000
+
+- **Node.js (npx serve)**:   
+
+```   
+cd frontend
+npx serve .
+```   
+Acesse: http://localhost:3000
+
+- **VS Code (Live Server)**:   
+
+  - Abra **index.html** dentro da pasta frontend e inicie o **Live Server**
+
+  
+  
 
 
 
