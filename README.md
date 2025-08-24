@@ -57,7 +57,11 @@ sistema-reservas/
 │── .gitignore          # Arquivos ignorados pelo Git
 ```   
 
-## Como Executar o Projeto   
+## Como Executar o Projeto  
+
+A aplicação pode ser executada de duas formas:   
+
+## Opção 1: Modo Tradicional
 
 **1. Clone o Repositório**   
 
@@ -135,10 +139,27 @@ Acesse: http://localhost:3000
 
   - Abra **index.html** dentro da pasta frontend e inicie o **Live Server**
 
-  
-  
+## Opção 2 : Usando Docker   
 
+1. Clone o repositório   
 
+```   
+git clone https://github.com/Gilvan-R-A/hotel-reservation-app
+cd hotel-reservation-system
+```   
+
+2. Configure o .env   
+  - Crie um arquivo .env na raiz do projeto
+  - Ajuste as variáveis conforme necessário:   
+
+3. Suba os containers   
+
+```   
+docker-compose up --build
+```   
+4. Acesse a aplicação   
+ - **Frontend:** http://localhost:3000
+ - **backend:** http://localhost:10000
 
 ## Exemplos de Uso da API   
 
